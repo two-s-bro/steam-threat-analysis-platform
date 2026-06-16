@@ -1,0 +1,32 @@
+# Maven
+target/
+*.jar
+*.war
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# --- ⚠️ NEVER COMMIT THESE ⚠️ ---
+# Virus samples (even if disabled)
+# The analysis source folder is for local research only
+诈骗项目600/
+*.SAFE_DISABLED
+*.bin
+*.rar
+
+# Sensitive
+application-local.yml
+*.pem
