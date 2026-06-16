@@ -190,27 +190,38 @@ Full YARA rules: [database/yara_seed.sql](database/yara_seed.sql)
 
 ## 📸 Screenshots
 
-> *Placeholder — replace with actual screenshots after launching*
+> *Running at http://localhost:5173 after `mvn spring-boot:run` + `npm run dev`*
+
+| Dashboard | IOC Intelligence | Timeline |
+|:---------:|:---------------:|:--------:|
+| ![Dashboard](screenshots/dashboard.png) | ![IOC](screenshots/iocs.png) | ![Timeline](screenshots/timeline.png) |
+
+| Component Graph | YARA Rules | Log Viewer |
+|:---------------:|:----------:|:----------:|
+| ![Components](screenshots/components.png) | ![YARA](screenshots/yara.png) | ![Logs](screenshots/logs.png) |
+
+> *Tip: Open http://localhost:5173, press `Win+Shift+S` on each page, save to `screenshots/`, then commit.*
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  🔬 Steam 威胁分析平台                                    │
-│  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️  ⚠️                               │
-│  IOC 高危 攻击 病毒 YARA C2                               │
-│  ─────────────────────────────────────                    │
-│  🛰️ C2 Monitor  │  ⚔️ Attack Chain (Phase 0→3)          │
-│  nexustechsolution│  [Phase 0] → [Phase 1] →              │
-│  .top: DISCONNECTED│       ↓         ↓                    │
-│                   │  [Phase 2] → [Phase 3]                │
-│  🎯 IOC Risk Pie │  📦 Phase Distribution               │
-│  (ECHARTS PIE)   │  (ECHARTS BAR CHART)                 │
-│                   │                                       │
-│  ⏱ Recent Events                                         │
-│  ┌──────┬─────────┬──────────────────────┐              │
-│  │INJECT│强杀Steam│2026-06-15 23:25:53   │              │
-│  │PHISH │构建钓鱼 │2026-06-15 23:25:54   │              │
-│  └──────┴─────────┴──────────────────────┘              │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  🔬 Steam Threat Analysis Platform                           │
+│                                                              │
+│  ⚠️ 44 IOCs  🔴 26 HIGH  📋 2717 Events  🧩 14 Components  │
+│                                                              │
+│  ┌───────────────────────┐ ┌────────────────────────────┐   │
+│  │ 🛰️ C2 Status (Safe)   │ │ ⚔️ Attack Chain            │   │
+│  │ nexustechsolution.top │ │ Phase 0 → Phase 1 →         │   │
+│  │ ■ DISCONNECTED        │ │        ↓        ↓           │   │
+│  │                       │ │ Phase 2 → Phase 3           │   │
+│  │ Infection: 23h        │ │                            │   │
+│  │ Heartbeats: 104       │ │ [Expandable details]       │   │
+│  └───────────────────────┘ └────────────────────────────┘   │
+│  ┌──────────┐ ┌──────────┐ ┌───────────────────────────┐   │
+│  │ IOC Risk │ │ Phase    │ │ ⏱ Recent Events           │   │
+│  │ Pie Chart│ │ Bar Chart│ │ INJECT  强杀Steam 23:25:53│   │
+│  │          │ │          │ │ PHISH   构建钓鱼 23:25:54  │   │
+│  └──────────┘ └──────────┘ └───────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
