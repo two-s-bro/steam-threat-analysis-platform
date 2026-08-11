@@ -37,9 +37,9 @@ const phases = [
     desc: '诱导下载',
     color: 'phase-0',
     details: [
-      '伪装为免费资源/修改器/外挂',
-      '通过网盘、论坛、群聊传播',
-      '诱导用户下载 SteelDungeon.exe'
+      '用户从不可信来源取得伪装资源',
+      '初始传播渠道未被独立确认',
+      '建议关联下载历史与安全告警'
     ]
   },
   {
@@ -47,10 +47,10 @@ const phases = [
     desc: 'Python 3.14',
     color: 'phase-1',
     details: [
-      '自解压到 %LocalAppData%\\Programs\\01anu7963sndw1ua\\',
-      '写入注册表 Run 键 "SteamHelper" 持久化',
-      '从 C2 下载 NexusTechNotify.exe + locale_patch.dll',
-      '解码 payload.bin 和 ungeond.rar'
+      '多个异常组件在用户目录中同批出现',
+      '用户级 Run 键指向异常目录',
+      '仓库仅发布哈希，不提供任何组件',
+      '载荷内容未经公开动态验证'
     ]
   },
   {
@@ -58,13 +58,11 @@ const phases = [
     desc: 'C/C++ MFC',
     color: 'phase-2',
     details: [
-      '读取 Steam VDF → 获取 SteamID64 + 头像哈希',
-      '向 C2 (example[.]invalid) 注册受害者',
-      '强杀 Steam 进程 (不弹关机对话框)',
-      '篡改 chunk~2dcc5aaf7.js → 注入 110B 恶意代码',
-      '写 steam.cfg 禁用自动更新',
-      '静默重启: steam.exe -silent',
-      '守护线程: 每 42 秒检查补丁完整性'
+      '账户相关配置被读取（公开值已脱敏）',
+      '历史记录包含去武器化异常目的地',
+      'Steam 进程与 UI 资源发生异常变化',
+      '更新相关配置被修改',
+      '周期性检查行为出现在历史日志中'
     ]
   },
   {
@@ -72,10 +70,10 @@ const phases = [
     desc: 'CEF注入+Toast',
     color: 'phase-3',
     details: [
-      'locale_patch.dll 向 CEF 注入 toast_window.html',
-      '弹窗显示: "Steam客服 - 您客服案件的新回复"',
-      '用户点击 → ResolveURL("HelpAppPage") 被劫持',
-      '跳转: example[.]invalid/steamhelper?d={SteamID64}&a={hash}'
+      '本地资源呈现仿冒支持通知',
+      '帮助/支持路由出现异常目的地',
+      '当前基础设施状态未检查',
+      '凭据风险取决于用户交互与远端证据'
     ]
   }
 ]

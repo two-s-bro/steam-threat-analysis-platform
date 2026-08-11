@@ -10,7 +10,7 @@
     </div>
 
     <el-alert type="info" :closable="false" style="margin-bottom:14px;">
-      基于真实 Steam 劫持病毒特征编写的 YARA 检测规则。可在下方测试区输入文件内容进行模拟匹配。
+      规则由已脱敏事件证据衍生。此处是教育用途的文本模式匹配器，并非完整 YARA 引擎或安全判定工具。
     </el-alert>
 
     <!-- 规则列表 -->
@@ -66,8 +66,8 @@
         <!-- 匹配结果 -->
         <div v-if="matchResults !== null" style="margin-top:14px;">
           <el-divider />
-          <div v-if="matchResults.length === 0" style="color:#00e676;padding:20px;text-align:center;">
-            ✅ 未命中任何规则 — 样本安全
+          <div v-if="matchResults.length === 0" style="color:#ffa502;padding:20px;text-align:center;">
+            ⚠️ 未匹配内置规则；这不能证明输入内容安全
           </div>
           <div v-else>
             <el-alert type="error" :closable="false" style="margin-bottom:10px;">

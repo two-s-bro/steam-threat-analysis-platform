@@ -26,9 +26,7 @@ public class SystemController {
             m.put("port", t.getPort());
             m.put("fullUrl", t.getFullUrl());
             m.put("riskLevel", t.getRiskLevel());
-            m.put("online", t.isOnline());
-            m.put("latency", t.getLatency());
-            m.put("lastCheck", t.getLastCheck() != null ? t.getLastCheck().toString() : null);
+            m.put("status", t.getStatus());
             m.put("historyNote", t.getHistoryNote());
             return m;
         }).toList());
@@ -37,8 +35,7 @@ public class SystemController {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("time", e.getTime() != null ? e.getTime().toString() : null);
             m.put("target", e.getTarget());
-            m.put("online", e.isOnline());
-            m.put("latency", e.getLatency());
+            m.put("status", e.getStatus());
             m.put("note", e.getNote());
             return m;
         }).toList());
@@ -56,20 +53,20 @@ public class SystemController {
         return ApiResponse.ok(data);
     }
 
-    /** 从本地日志刷新 C2 历史状态 (不连接外部) */
+    /** 从已入库的脱敏事件刷新 C2 历史状态（不连接外部） */
     @PostMapping("/c2-refresh")
     public ApiResponse<Map<String, Object>> refreshFromLogs() {
         c2Monitor.refreshFromLogs();
         return getC2Status();
     }
 
-    /** 导入真实日志 */
-    @PostMapping("/import-logs")
-    public ApiResponse<Map<String, Object>> importLogs() {
+    /** 导入随应用分发的脱敏研究样例 */
+    @PostMapping("/import-samples")
+    public ApiResponse<Map<String, Object>> importSamples() {
         try {
-            return ApiResponse.ok("真实日志导入完成", dataImport.importAllRealLogs());
+            return ApiResponse.ok("脱敏样例加载完成", dataImport.importBundledSamples());
         } catch (Exception e) {
-            return ApiResponse.error(500, "导入失败: " + e.getMessage());
+            return ApiResponse.error(500, "样例加载失败: " + e.getMessage());
         }
     }
 }

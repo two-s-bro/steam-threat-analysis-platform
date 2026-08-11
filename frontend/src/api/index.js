@@ -30,7 +30,7 @@ export const getComponentTree = () => api.get('/components/tree')
 // ============ System ============
 export const getC2Status = () => api.get('/system/c2-status')
 export const refreshC2FromLogs = () => api.post('/system/c2-refresh')
-export const importLogs = () => api.post('/system/import-logs')
+export const importSamples = () => api.post('/system/import-samples')
 
 // ============ YARA ============
 export const getYaraRules = () => api.get('/yara')

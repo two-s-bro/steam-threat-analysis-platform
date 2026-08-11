@@ -1,10 +1,7 @@
--- ============================================
--- YARA 规则种子数据
--- 基于 Steam 劫持病毒特征编写
--- ============================================
+-- Defensive pattern rules derived from redacted incident evidence.
+-- These records feed the project's educational text matcher; they are not a substitute for a YARA scanner.
 USE steam_threat_db;
 
--- 建表 (如果 JPA ddl-auto=none 则需手动)
 CREATE TABLE IF NOT EXISTS yara_rule (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     rule_name VARCHAR(100) NOT NULL UNIQUE,
@@ -19,144 +16,127 @@ CREATE TABLE IF NOT EXISTS yara_rule (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 清空旧数据
-TRUNCATE yara_rule;
-
-INSERT INTO yara_rule (rule_name, description, risk_level, target_type, rule_body, match_sample, enabled) VALUES
+INSERT IGNORE INTO yara_rule
+(rule_name, description, risk_level, target_type, rule_body, match_sample, enabled) VALUES
 
 ('SteamHijack_RegPersistence_SteamHelper',
- '检测伪装成 SteamHelper 的注册表持久化',
+ '检测伪装成 SteamHelper 的用户级 Run 键持久化',
  'HIGH', 'registry',
  'rule SteamHijack_RegPersistence_SteamHelper {
     strings:
-        $key1 = "SteamHelper" nocase
-        $key2 = "lizercllaxe.exe"
-        $key3 = "\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run"
+        $name = "SteamHelper" nocase
+        $file = "lizercllaxe.exe"
+        $run = "\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run"
     condition:
-        ($key1 and $key2) or ($key1 and $key3)
+        $name and ($file or $run)
 }',
  'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SteamHelper', TRUE),
 
-('SteamHijack_RegPersistence_SteamService',
- '检测伪装成 SteamService 的注册表持久化',
+('SteamHijack_RegPersistence_ServiceNames',
+ '检测同批证据中使用的伪装服务名与文件名组合',
  'HIGH', 'registry',
- 'rule SteamHijack_RegPersistence_SteamService {
+ 'rule SteamHijack_RegPersistence_ServiceNames {
     strings:
-        $key1 = "SteamService" nocase
-        $key2 = "snapshot.exe"
-        $key3 = "v6vslsk8sfjeiqau"
+        $name1 = "SteamService" nocase
+        $name2 = "WindowsUpdateService" nocase
+        $file1 = "snapshot.exe"
+        $file2 = "gameSatorHost.exe"
     condition:
-        ($key1 and $key2) or any of them
+        ($name1 and $file1) or ($name2 and $file2)
 }',
- 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SteamService', TRUE),
+ 'Run 键名称与落地文件名组合', TRUE),
 
-('SteamHijack_RegPersistence_WindowsUpdateService',
- '检测伪装成 WindowsUpdateService 的注册表持久化',
- 'HIGH', 'registry',
- 'rule SteamHijack_RegPersistence_WindowsUpdateService {
-    strings:
-        $key1 = "WindowsUpdateService" nocase
-        $key2 = "gameSatorHost.exe"
-        $key3 = "launcher_"
-    condition:
-        ($key1 and $key2) or ($key1 and $key3)
-}',
- 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\WindowsUpdateService', TRUE),
-
-('SteamHijack_Dropper_SteelDungeon',
- '检测 SteelDungeon dropper 及其组件',
+('SteamHijack_Component_Cluster',
+ '检测同一目录或清单中出现的多个事件组件名',
  'HIGH', 'file',
- 'rule SteamHijack_Dropper_SteelDungeon {
+ 'rule SteamHijack_Component_Cluster {
     strings:
         $exe1 = "SteelDungeon.exe"
         $exe2 = "NexusTechNotify.exe"
         $dll1 = "locale_patch.dll"
-        $py1  = "python314.dll"
-        $dir  = "01anu7963sndw1ua"
+        $payload = "payload.bin"
     condition:
         2 of them
 }',
- '[PRIVATE_HOME]\\AppData\\Local\\Programs\\01anu7963sndw1ua\\SteelDungeon.exe', TRUE),
+ '脱敏文件清单或 EDR 遥测', TRUE),
 
-('SteamHijack_C2_Domain',
- '检测 C2 域名 example[.]invalid',
+('SteamHijack_Defanged_C2',
+ '匹配研究数据中的去武器化历史 C2 与端点',
  'HIGH', 'url',
- 'rule SteamHijack_C2_Domain {
+ 'rule SteamHijack_Defanged_C2 {
     strings:
-        $c2  = "example[.]invalid"
-        $api = "/steamhelper"
+        $host = "nexustechsolution[.]top"
+        $api1 = "/steamhelper"
         $api2 = "/steamhelper.html"
     condition:
-        $c2 and ($api or $api2)
+        $host and ($api1 or $api2)
 }',
- 'https://example[.]invalid/steamhelper?d=[REDACTED_STEAMID64]', TRUE),
+ 'hxxps://nexustechsolution[.]top/steamhelper', TRUE),
 
 ('SteamHijack_Chunk_JS_Injection',
- '检测被注入恶意代码的 Steam chunk JS',
+ '检测帮助页面路由与去武器化 IOC 同时出现的异常客户端脚本',
  'HIGH', 'file',
  'rule SteamHijack_Chunk_JS_Injection {
     strings:
-        $inj1 = "example[.]invalid"
-        $inj2 = "SupportMessages"
-        $inj3 = "HelpAppPage"
-        $inj4 = "HelpFrontPage"
-        $inj5 = "[REDACTED_STEAMID64]"
+        $host = "nexustechsolution[.]top"
+        $route1 = "SupportMessages"
+        $route2 = "HelpAppPage"
+        $route3 = "HelpFrontPage"
     condition:
-        ($inj1 and $inj2) or ($inj1 and ($inj3 or $inj4))
+        $host and 1 of ($route*)
 }',
- 'steamui\\chunk~2dcc5aaf7.js (被篡改版本)', TRUE),
+ 'Steam 客户端 JS 的脱敏文本或差异报告', TRUE),
 
 ('SteamHijack_SteamCfg_Disabled',
- '检测被篡改的 steam.cfg (禁用自动更新)',
+ '检测同时禁用 Steam 引导更新与强制自更新的配置',
  'MEDIUM', 'file',
  'rule SteamHijack_SteamCfg_Disabled {
     strings:
         $cfg1 = "BootStrapperInhibitAll=enable"
         $cfg2 = "BootStrapperForceSelfUpdate=disable"
     condition:
-        $cfg1 and $cfg2
+        all of them
 }',
- 'Steam\\steam.cfg (篡改后)', TRUE),
+ 'Steam\\steam.cfg 的文本内容', TRUE),
 
 ('SteamHijack_Toast_Phishing',
- '检测钓鱼 Toast 弹窗文件',
+ '检测同批钓鱼通知资源名称与伪造案件标识组合',
  'MEDIUM', 'file',
  'rule SteamHijack_Toast_Phishing {
     strings:
-        $t1 = "toast_window.html"
-        $t2 = "toast-authentic.css"
-        $t3 = "SteamToastWin"
-        $t4 = "HT6YWQBY4XMF55"
-        $t5 = "您客服案件的新回复"
+        $html = "toast_window.html"
+        $css = "toast-authentic.css"
+        $window = "SteamToastWin"
+        $ticket = "HT6YWQBY4XMF55"
     condition:
-        ($t1 and $t2) or $t3 or ($t4 and $t5)
+        2 of them
 }',
- 'ServiceApp\\toast_window.html', TRUE),
+ '文件清单、HTML 文本或窗口遥测', TRUE),
 
-('SteamHijack_PyInstaller_Payload',
- '检测 PyInstaller 打包的恶意 Python 载荷',
+('SteamHijack_Packaged_Python_Cluster',
+ '检测同一清单中出现的多个打包 Python 载荷组件',
  'MEDIUM', 'file',
- 'rule SteamHijack_PyInstaller_Payload {
+ 'rule SteamHijack_Packaged_Python_Cluster {
     strings:
-        $p1 = "python314.dll"
-        $p2 = "library.zip"
-        $p3 = "win32crypt.pyd"
-        $p4 = "win32api.pyd"
-        $p5 = "payload.bin"
+        $runtime = "python314.dll"
+        $library = "library.zip"
+        $crypto = "win32crypt.pyd"
+        $api = "win32api.pyd"
+        $payload = "payload.bin"
     condition:
         3 of them
 }',
- '01anu7963sndw1ua\\ (Python 3.14 PyInstaller 载荷)', TRUE),
+ '静态文件清单；单个 Python 组件不足以判恶', TRUE),
 
-('SteamHijack_VDF_SteamID64_Leak',
- '检测泄露的 SteamID64 标识符',
+('SteamHijack_Profile_Exfiltration_Context',
+ '检测 Steam 配置读取与外传端点上下文组合，不依赖任何受害者 ID',
  'MEDIUM', 'file',
- 'rule SteamHijack_VDF_SteamID64_Leak {
+ 'rule SteamHijack_Profile_Exfiltration_Context {
     strings:
-        $sid = "[REDACTED_STEAMID64]"
-        $hash1 = "[REDACTED_TOKEN]"
-        $hash2 = "[REDACTED_TOKEN]"
+        $vdf = "loginusers.vdf" nocase
+        $profile = "steamid64" nocase
+        $endpoint = "/steamhelper"
     condition:
-        $sid and ($hash1 or $hash2)
+        $vdf and $profile and $endpoint
 }',
- '日志/配置文件中硬编码的 SteamID64', TRUE);
+ '脱敏日志或脚本差异中的组合上下文', TRUE);

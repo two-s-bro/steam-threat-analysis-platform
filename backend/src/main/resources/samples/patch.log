@@ -1,0 +1,5 @@
+2026-06-15 23:25:53 profile steamid64: [REDACTED_STEAMID64], account: [REDACTED_ACCOUNT], avatar: [REDACTED_AVATAR_HASH]
+2026-06-15 23:25:54 patch url help: hxxps://nexustechsolution[.]top/steamhelper?d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR_HASH]
+2026-06-15 23:25:55 patch: completed for curated fixture
+2026-06-15 23:25:55 steam.cfg: write observed in source evidence
+2026-06-15 23:25:59 watch: check result=0

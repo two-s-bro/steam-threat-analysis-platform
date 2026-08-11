@@ -1,5 +1,5 @@
 -- ============================================
--- Steam 威胁分析平台 - 数据库建表脚本
+-- Steam 威胁分析平台 - 非破坏性数据库建表脚本
 -- 数据库: steam_threat_db
 -- ============================================
 
@@ -9,8 +9,7 @@ CREATE DATABASE IF NOT EXISTS steam_threat_db
 USE steam_threat_db;
 
 -- IOC 威胁情报表
-DROP TABLE IF EXISTS ioc;
-CREATE TABLE ioc (
+CREATE TABLE IF NOT EXISTS ioc (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     ioc_type VARCHAR(30) NOT NULL COMMENT 'IOC类型: domain/file_path/registry_key/steamid/case_number',
     ioc_value VARCHAR(500) NOT NULL COMMENT 'IOC值',
@@ -22,8 +21,7 @@ CREATE TABLE ioc (
 ) ENGINE=InnoDB;
 
 -- 攻击时间线表
-DROP TABLE IF EXISTS timeline;
-CREATE TABLE timeline (
+CREATE TABLE IF NOT EXISTS timeline (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     timestamp DATETIME NOT NULL COMMENT '事件时间',
     phase VARCHAR(30) NOT NULL COMMENT 'DROPPER/PERSIST/INJECT/PHISH/HEARTBEAT',
@@ -35,8 +33,7 @@ CREATE TABLE timeline (
 ) ENGINE=InnoDB;
 
 -- 病毒组件表
-DROP TABLE IF EXISTS component_info;
-CREATE TABLE component_info (
+CREATE TABLE IF NOT EXISTS component_info (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL COMMENT '组件名称',
     role VARCHAR(50) NOT NULL COMMENT 'dropper/controller/injector/payload/c2',

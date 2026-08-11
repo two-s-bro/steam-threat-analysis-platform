@@ -48,7 +48,7 @@
           </el-timeline-item>
         </el-timeline>
 
-        <el-empty v-if="!pagedEvents.length && !loading" description="暂无时间线数据，请先导入真实日志" />
+        <el-empty v-if="!pagedEvents.length && !loading" description="暂无时间线数据，可从样例页加载内置脱敏记录" />
 
         <div v-if="totalCount > pageSize" style="text-align:center;margin-top:16px;">
           <el-pagination

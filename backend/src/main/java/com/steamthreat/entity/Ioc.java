@@ -24,7 +24,7 @@ public class Ioc {
     @Column(nullable = false, length = 30)
     private String iocType;
 
-    /** IOC 值: example[.]invalid */
+    /** IOC 值示例: example[.]invalid */
     @Column(nullable = false, length = 500)
     private String iocValue;
 
