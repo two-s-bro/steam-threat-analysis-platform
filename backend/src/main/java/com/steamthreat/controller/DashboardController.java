@@ -35,7 +35,7 @@ public class DashboardController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("dashboard", dto);
 
-        // C2 实时状态
+        // C2 历史证据；不进行实时网络检查
         List<Map<String, Object>> c2Targets = c2Monitor.getTargets().stream().map(t -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("host", t.getHost());
@@ -43,9 +43,8 @@ public class DashboardController {
             m.put("port", t.getPort());
             m.put("fullUrl", t.getFullUrl());
             m.put("riskLevel", t.getRiskLevel());
-            m.put("online", t.isOnline());
-            m.put("latency", t.getLatency());
-            m.put("lastCheck", t.getLastCheck() != null ? t.getLastCheck().toString() : null);
+            m.put("status", t.getStatus());
+            m.put("historyNote", t.getHistoryNote());
             return m;
         }).toList();
         result.put("c2Targets", c2Targets);
@@ -54,8 +53,8 @@ public class DashboardController {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("time", e.getTime() != null ? e.getTime().toString() : null);
             m.put("target", e.getTarget());
-            m.put("online", e.isOnline());
-            m.put("latency", e.getLatency());
+            m.put("status", e.getStatus());
+            m.put("note", e.getNote());
             return m;
         }).toList();
         result.put("c2Events", c2Events);

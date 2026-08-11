@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "algorithm": "SHA-256",
+  "source": "private-incident-corpus",
+  "analysis_date": "2026-08-12",
+  "sample_files_distributed": false,
+  "artifacts": [
+    {
+      "name": "SteelDungeon.exe.SAFE_DISABLED",
+      "size_bytes": 22016,
+      "sha256": "97796dac3ceb63587495da58b73dee1135b79b9f608e3019b4987d3bcc0cdbb7"
+    },
+    {
+      "name": "payload.bin",
+      "size_bytes": 38096,
+      "sha256": "4fb2b5e6572049f85fa7dec725f3f6b79b91d42f8959eaa3362a556bf91e926c"
+    },
+    {
+      "name": "NexusTechNotify.exe.SAFE_DISABLED",
+      "size_bytes": 236544,
+      "sha256": "0703cfef89514bf9156bf243c38ce6293f154458dfea3e18ad1d0840a3682f53"
+    },
+    {
+      "name": "locale_patch.dll.SAFE_DISABLED",
+      "size_bytes": 206336,
+      "sha256": "0eb6d096ffc43971c98d444b83b33abe9fcf7d67b33a11099b88051deae0e4a8"
+    },
+    {
+      "name": "_svc_launch.bat.SAFE_DISABLED",
+      "size_bytes": 155,
+      "sha256": "898f6baf5e6797449757d83e81ef5927ffe88a589ffff10a9cfae7ee2b34554e"
+    },
+    {
+      "name": "SteamPatchToast_patch.lo",
+      "size_bytes": 115636,
+      "sha256": "2f86c1a34e00d974a8db91e6ce1a222558eb6462b1d5cd02d11c47e2ef85a092"
+    },
+    {
+      "name": "SteamPatchToast_startup.lo",
+      "size_bytes": 855,
+      "sha256": "81ecc41cc6244292b9e7f2bcc85a9db20c501a58effcd7f9ce501bc3127e9028"
+    },
+    {
+      "name": "chunk-patched.js",
+      "size_bytes": 14040272,
+      "sha256": "4db1805df20ed6bc63e28d793d6f3167a86877b22e84b5db44f2908e31610423"
+    }
+  ]
+}

@@ -1,111 +1,37 @@
-# 组件 b — NexusTechNotify.exe (主控 / Steam 劫持引擎)
+# 组件 B — NexusTechNotify.exe 防御性摘要
 
----
+> 仓库不分发该文件，也不提供反汇编、客户端补丁或通信复现步骤。
 
-## 基本信息
+## 已核验元数据
 
 | 属性 | 值 |
 |------|-----|
-| 文件名 | `NexusTechNotify.exe` |
-| 技术栈 | C/C++ (MFC GUI 框架) |
-| 体积 | 231 KB |
-| 平台 | Win32 x86 |
-| 运行方式 | 注册表 Run 键自启动 |
+| 私有证据文件 | `NexusTechNotify.exe.SAFE_DISABLED` |
+| 大小 | 236,544 bytes |
+| SHA-256 | `0703cfef89514bf9156bf243c38ce6293f154458dfea3e18ad1d0840a3682f53` |
+| 平台线索 | Win32 x86 / C/C++ GUI 组件 |
 
----
+## 日志支持的行为
 
-## 核心行为 (从日志还原)
+- 发现 Steam 安装位置并读取账户相关配置；
+- 终止并重新启动 Steam 进程；
+- 修改 Steam UI 资源和更新相关配置；
+- 构建指向 `nexustechsolution[.]top` 的历史异常目的地；
+- 重复检查部分文件/配置状态；
+- 在约 23.5 小时的历史窗口中伴随心跳记录。
 
-### 1. 枚举 Steam 安装路径
-```
-steam path: [DRIVE_ROOT]/steam
-```
+公开材料删除了安装路径、账户标识、URL 参数和可执行的修改逻辑。
 
-### 2. 解析 Steam VDF 配置
-```
-读取 loginusers.vdf:
-  ├─ SteamID64:  [REDACTED_STEAMID64]
-  └─ 账户名哈希:  [REDACTED_TOKEN]
+## 检测建议
 
-读取 config/config.vdf:
-  └─ 头像哈希:    [REDACTED_TOKEN]
-```
+| 数据源 | 组合信号 |
+|--------|----------|
+| EDR | 该哈希或同名文件 + Steam 进程终止/启动 |
+| 文件完整性 | 非官方更新进程修改 `steamui/` |
+| 注册表 | 用户级 Run 键指向异常、无签名或随机目录文件 |
+| 配置审计 | UI 变化与禁用更新配置同时出现 |
+| 网络历史 | 去武器化 IOC 与上述主机行为处于同一时间窗口 |
 
-### 3. 构建 C2 钓鱼 URL (带受害者唯一标识)
-```
-help URL:
-  https://example[.]invalid/steamhelper?d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR]
+## 结论边界
 
-support URL:
-  https://example[.]invalid/steamhelper.html?u=[REDACTED_ACCOUNT]&d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR]
-```
-
-### 4. 强杀 Steam 进程
-```
-proc sync: force kill (no shutdown dialog)
-proc sync: done
-```
-
-### 5. 篡改 Steam UI 核心文件
-```
-patch check: need=1 already=0
-patch: needed, applying
-目标文件: [DRIVE_ROOT]/steam\steamui\chunk~2dcc5aaf7.js
-注入位置: ResolveURL() 函数内部
-注入大小: ~110 字节
-劫持目标: HelpAppPage / HelpFrontPage / SupportMessages
-```
-
-### 6. 写入 steam.cfg 禁用更新
-```
-steam.cfg: write ok
-内容:
-  BootStrapperInhibitAll=enable
-  BootStrapperForceSelfUpdate=disable
-```
-
-### 7. 静默重启 Steam
-```
-proc sync: steam.exe -silent (detached)
-```
-
-### 8. 守护线程
-```
-每 42 秒循环检查:
-  watch: check
-  patch check: need=0 already=1
-  cfg check: need=0 had_steam=1
-  patch skip: already patched
-  watch: result=0
-
-如果发现补丁被修复 (need=1 already=0):
-  → 重新执行步骤 4-7
-```
-
----
-
-## 守护线程时间线
-
-日志显示从 2026-06-15 23:25:59 开始守护，约每 42-43 秒检查一次，
-持续运行到 2026-06-16 22:53:44，共约 23.5 小时。
-
----
-
-## 下载日志格式
-
-```
-2026-06-15 23:25:44 [REDACTED_STEAMID64]----匹配成功----下载成功----执行成功
-2026-06-15 23:29:29 [REDACTED_STEAMID64]----匹配成功----已经下载过----进程已经存在
-```
-
-格式: `时间戳 SteamID64----匹配状态----下载状态----执行状态`
-
-每约 3.5 分钟向 C2 上报一次心跳。
-
----
-
-## 待逆向内容
-
-- IDA Pro / Ghidra 静态分析可执行文件
-- C2 API 端点完整列表
-- 是否有其他隐藏功能 (键盘记录/截图/远控)
+日志不足以确认键盘记录、截图、远控或其他隐藏功能；这些状态保持 `UNKNOWN`。周期性记录支持“守护检查”推断，但不应被表述为精确、恒定的执行间隔。

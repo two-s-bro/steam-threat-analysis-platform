@@ -1,49 +1,31 @@
-# 组件 c — locale_patch.dll (CEF 进程注入)
+# 组件 C — locale_patch.dll 防御性摘要
 
----
+> 公开项目不分发 DLL，不说明加载、注入或客户端渲染管线劫持方法。
 
-## 基本信息
+## 已核验元数据
 
 | 属性 | 值 |
 |------|-----|
-| 文件名 | `locale_patch.dll` |
-| 技术栈 | C/C++ DLL |
-| 体积 | 201 KB |
-| 平台 | Win32 x86 |
-| 注入目标 | Steam CEF (Chromium Embedded Framework) 进程 |
+| 私有证据文件 | `locale_patch.dll.SAFE_DISABLED` |
+| 大小 | 206,336 bytes |
+| SHA-256 | `0eb6d096ffc43971c98d444b83b33abe9fcf7d67b33a11099b88051deae0e4a8` |
+| 关联环境 | Steam 客户端 UI / CEF 相关文件集 |
 
----
+## 证据支持程度
 
-## 推测功能
+| 结论 | 等级 | 说明 |
+|------|------|------|
+| DLL 与本地通知资源同批落地 | 直接文件观察 | 文件时间和目录关联 |
+| 通知在 Steam 客户端上下文中呈现 | 日志/事件关联 | 缺少完整进程级遥测 |
+| DLL 负责具体注入行为 | 未验证假设 | 未在公开环境执行或动态调试 |
+| 使用某一种 Windows 注入 API | `UNKNOWN` | 不从文件名或环境猜测具体机制 |
 
-1. **注入到 Steam CEF 进程**
-   - Steam 客户端使用 CEF 渲染 UI
-   - DLL 通过 `SetWindowsHookEx` 或 `CreateRemoteThread` 注入
+## 检测与调查
 
-2. **加载钓鱼弹窗**
-   - 在 CEF 浏览器上下文中加载 `toast_window.html`
-   - 使用 Steam 原生 Toast 动画系统显示弹窗
+- 比较 SHA-256、签名状态、创建来源和父进程；
+- 调查非 Steam 进程向 Steam/CEF 进程加载模块的遥测；
+- 关联同目录通知资源、UI 文件变化和用户级持久化；
+- 对可信客户端版本做完整性比较；
+- 不加载该 DLL，不恢复其代码，不把它上传到公开 Issue 或 PR。
 
-3. **触发时机**
-   - 注入后等待合适时机显示弹窗（用户活跃状态）
-   - 弹窗设计为看起来像 Steam 客服通知
-
----
-
-## 与 JS 注入的配合
-
-locale_patch.dll 负责 **UI 诱导层**:
-- 在 CEF 渲染管线的特定位置插入 toast_window.html
-- 弹窗样式使用 toast-authentic.css (1:1 还原 Steam Toast)
-
-chunk JS 注入负责 **URL 路由层**:
-- 用户点击弹窗后，Steam 调用 ResolveURL("HelpAppPage")
-- 被劫持的 URL 将用户导向 C2 钓鱼页面
-
----
-
-## 待逆向内容
-
-- IDA Pro / Ghidra 分析注入技术 (Hook 类型、注入方法)
-- CEF 渲染管线劫持点分析
-- 是否有反调试/反沙箱代码
+进一步验证应由具备授权和隔离设施的专业团队完成，本仓库只维护防御性元数据和检测上下文。

@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible problem using synthetic or redacted data.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach malware, raw logs, credentials, or personal data.
+  - type: input
+    id: revision
+    attributes:
+      label: Revision
+      description: Commit SHA or release tag where the problem occurs.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: Explain expected and actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Safe reproduction
+      description: Use only synthetic or redacted text.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I did not include malware, recoverable source, secrets, raw logs, or personal identifiers.
+          required: true

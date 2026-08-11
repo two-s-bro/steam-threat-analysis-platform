@@ -1,0 +1,32 @@
+name: Detection rule proposal
+description: Propose a defensive signal or report a false positive.
+title: "[Detection]: "
+labels: [detection]
+body:
+  - type: textarea
+    id: signal
+    attributes:
+      label: Defensive signal
+      description: Describe the stable behavior or metadata without including a sample.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and provenance
+      description: Distinguish direct observation from inference; hashes are acceptable.
+    validations:
+      required: true
+  - type: textarea
+    id: false_positives
+    attributes:
+      label: False positives and negative cases
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: All indicators are defanged and all identifiers are synthetic or redacted.
+          required: true
