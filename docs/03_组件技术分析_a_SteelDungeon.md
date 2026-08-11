@@ -1,90 +1,39 @@
-# 组件 a — SteelDungeon.exe (Dropper / 下载器)
+# 组件 A — SteelDungeon.exe 静态证据摘要
 
----
+> 本页只记录从隔离证据中得到的静态元数据和防御性结论。仓库不分发该文件，也不提供启动、解包、解密或恢复载荷的步骤。
 
-## 基本信息
+## 已核验元数据
 
 | 属性 | 值 |
 |------|-----|
-| 文件名 | `SteelDungeon.exe` |
-| 技术栈 | Python 3.14 + PyInstaller |
-| exe 体积 | 22 KB |
-| python314.dll | 6.5 MB |
-| python3.dll | 72 KB |
-| library.zip | ~3.8 MB (标准库) |
-| payload.bin | 38 KB (加密载荷) |
-| ungeond.rar | 15.8 MB (加密压缩包) |
-| _svc_launch.bat | 155 B (启动脚本) |
+| 文件名 | `SteelDungeon.exe.SAFE_DISABLED`（仅存在于私有证据目录） |
+| SHA-256 | `97796dac3ceb63587495da58b73dee1135b79b9f608e3019b4987d3bcc0cdbb7` |
+| 大小 | 22,016 bytes |
+| 相关载荷名 | `payload.bin`、`library.zip`、`python314.dll` |
+| 观察到的打包特征 | CPython / PyInstaller 运行时布局 |
 
----
+## 防御性判断
 
-## 启动脚本 (_svc_launch.bat)
+静态目录布局和同批日志支持以下假设，但不把尚未动态验证的内容表述为事实：
 
-```batch
-@echo off
-cd /d "[PRIVATE_HOME]\AppData\Local\Programs\01anu7963sndw1ua"
-start "" "[PRIVATE_HOME]\AppData\Local\Programs\01anu7963sndw1ua\SteelDungeon.exe"
-```
+- 该文件可能承担首阶段加载器角色；
+- 后续行为涉及持久化、进程控制、客户端文件篡改和外部通信；
+- `payload.bin` 与压缩归档可能承载后续配置或组件；
+- `vdf`、`requests`、`win32crypt` 等依赖名称可作为调查线索，但单独出现不能证明恶意行为。
 
----
+## 可用于检测与调查的信号
 
-## Python 依赖库 (lib/ 目录)
+- SHA-256 与文件大小组合；
+- 异常目录名与同批组件的共同落地；
+- 用户级 Run 键指向临时或随机目录；
+- Steam 客户端资源文件和 `steam.cfg` 的非预期变更；
+- 与仓库中已去武器化 IOC 对应的代理、DNS 或 EDR 历史记录。
 
-### 加密/安全类
-| 库 | 用途 |
-|----|------|
-| `Crypto/` (PyCryptodome) | AES/RSA/ECC 加密解密 |
-| `cryptography/` | 现代加密库 (OpenSSL 绑定) |
-| `cffi/` | C 扩展接口 (调用 .dll/.pyd) |
-| `certifi/` | SSL 证书验证 |
-| `jwt/` | JWT 令牌处理 (Steam Session) |
+## 安全边界
 
-### 网络通信类
-| 库 | 用途 |
-|----|------|
-| `requests/` | HTTP 请求 |
-| `urllib3/` | URL 处理 |
-| `h2/` | HTTP/2 协议支持 |
-| `hpack/` | HTTP/2 头部压缩 |
-| `hyperframe/` | HTTP/2 帧处理 |
+- 不在工作站或 CI 中执行、编译、解包或反编译样本；
+- 不提交 `.exe`、`.dll`、`.pyc`、归档、载荷或原始日志；
+- 不尝试恢复密钥、解密载荷或重建钓鱼界面；
+- 需要进一步分析时，应由具备授权和隔离设施的专业团队按组织流程进行。
 
-### Steam 交互类
-| 库 | 用途 |
-|----|------|
-| `vdf/` | Valve Data Format 解析 (读取 Steam 本地配置) |
-
-### Windows API 类
-| 库 | 用途 |
-|----|------|
-| `win32api.pyd` | Windows API 调用 |
-| `win32crypt.pyd` | Windows 凭据管理 (凭据窃取) |
-| `_win32sysloader.pyd` | 系统级 DLL 加载器 |
-| `pywintypes314.dll` | Windows 类型支持 |
-
-### SSL/TLS 类 (native .pyd/.dll)
-| 文件 | 用途 |
-|------|------|
-| `_ssl.pyd` | SSL/TLS 加密通信 |
-| `_socket.pyd` | Socket 网络通信 |
-| `libcrypto-3.dll` | OpenSSL 加密库 |
-| `libssl-3.dll` | OpenSSL SSL 库 |
-
----
-
-## 推测功能
-
-1. **自解压**: 从 PyInstaller 打包中提取 Python 运行时到安装目录
-2. **持久化**: 写入注册表 Run 键
-3. **下载**: 从 C2 拉取 NexusTechNotify.exe、locale_patch.dll 等组件
-4. **解密**: 使用 Crypto 库解密 payload.bin 和 ungeond.rar
-5. **VDF 解析**: 读取 Steam 本地配置文件获取受害者信息
-6. **上报**: 向 C2 注册受害者
-7. **启动**: 执行 NexusTechNotify.exe 进入 Phase 2
-
----
-
-## 待逆向内容
-
-- `payload.bin` — 需提取 SteelDungeon.exe 中的解密密钥
-- `ungeond.rar` — 15.8MB 加密压缩包，疑似包含 ServiceApp 完整组件
-- `library.zip` — PyInstaller 标准库包，可解压查看 Python 源码
+完整哈希清单见 [`../evidence/sample-hashes.json`](../evidence/sample-hashes.json)，处理规范见 [`SAMPLE_HANDLING.md`](SAMPLE_HANDLING.md)。

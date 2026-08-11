@@ -22,25 +22,25 @@
 
     <!-- ===== C2 实时监控 + 攻击链 ===== -->
     <el-row :gutter="14" style="margin-top: 14px;">
-      <!-- C2 实时监控卡片 -->
+      <!-- C2 历史证据卡片 -->
       <el-col :span="8">
         <div class="panel">
           <div class="panel-header">
-            <span>🛰️ C2 历史状态（离线分析模式）</span>
-            <el-tag type="success" size="small" effect="dark">安全模式</el-tag>
+            <span>🛰️ C2 历史证据（离线）</span>
+            <el-tag type="info" size="small" effect="dark">NOT_CHECKED</el-tag>
           </div>
           <div class="panel-body c2-panel">
             <div v-for="target in c2Targets" :key="target.label" class="c2-target-row">
               <div class="c2-target-info">
-                <span class="c2-dot c2-down"></span>
+                <span class="c2-dot c2-unknown"></span>
                 <div>
                   <div class="c2-label">{{ target.label }}</div>
                   <div class="c2-url">{{ target.host }}:{{ target.port }}</div>
                 </div>
               </div>
               <div class="c2-metrics">
-                <span class="text-muted">已断联</span>
-                <div class="c2-time" style="color:#00e676;">不会发起外部连接</div>
+                <span class="text-muted">{{ target.status || 'NOT_CHECKED' }}</span>
+                <div class="c2-time">不解析 DNS / 不发起连接</div>
               </div>
             </div>
             <!-- 感染历史统计 -->
@@ -49,11 +49,11 @@
               <div class="history-grid">
                 <div class="history-item">
                   <div class="history-num">{{ c2History.totalHeartbeats }}</div>
-                  <div class="history-label">心跳总数</div>
+                  <div class="history-label">已入库历史心跳</div>
                 </div>
                 <div class="history-item">
                   <div class="history-num">{{ c2History.durationHours }}h</div>
-                  <div class="history-label">感染时长</div>
+                  <div class="history-label">记录时间跨度</div>
                 </div>
               </div>
               <div class="history-time">⏱ 首次: {{ c2History.firstHeartbeat?.substring(0,19) || '-' }}</div>
@@ -62,7 +62,7 @@
             <!-- 心跳折线图 -->
             <div ref="c2Chart" style="height:120px; margin-top:8px;"></div>
             <el-button size="small" text @click="refreshC2" style="margin-top:6px;width:100%;">
-              <el-icon><Refresh /></el-icon> 从日志刷新
+              <el-icon><Refresh /></el-icon> 从脱敏记录刷新
             </el-button>
           </div>
         </div>
@@ -133,11 +133,10 @@ const statCards = computed(() => {
     { icon: '📋', label: '攻击事件', value: d.totalTimelineEvents || 0, color: '#f9a825' },
     { icon: '🧩', label: '病毒组件', value: d.totalComponents || 0, color: '#00e676' },
     { icon: '🛡️', label: 'YARA 规则', value: 10, color: '#448aff' },
-    { icon: '🔗', label: 'C2 监控', value: c2Targets.value.length + '个', color: '#e040fb' }
+    { icon: '🔗', label: '历史 C2 IOC', value: c2Targets.value.length + '个', color: '#e040fb' }
   ]
 })
 
-const c2AnyOnline = computed(() => c2Targets.value.some(t => t.online))
 const recentEvents = computed(() => dashboard.value.recentEvents || [])
 const phaseTag = (p) => ({ DROPPER: 'danger', PERSIST: 'warning', INJECT: '', PHISH: 'danger', HEARTBEAT: 'info' }[p] || '')
 
@@ -218,10 +217,10 @@ const renderC2Chart = () => {
     xAxis: { show: false, data: events.map(e => e.time?.substring(11,19) || '') },
     yAxis: { show: false, min: 0, max: 1 },
     series: [{
-      type: 'line', step: 'end', data: events.map(e => e.online ? 1 : 0),
-      lineStyle: { color: '#ff5e5e', width: 1.5 },
+      type: 'line', step: 'end', data: events.map(() => 1),
+      lineStyle: { color: '#448aff', width: 1.5 },
       areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[
-        {offset:0, color:'rgba(255,94,94,0.3)'}, {offset:1, color:'rgba(255,94,94,0)'}
+        {offset:0, color:'rgba(68,138,255,0.3)'}, {offset:1, color:'rgba(68,138,255,0)'}
       ]) },
       symbol: 'none'
     }]
@@ -268,6 +267,7 @@ onMounted(loadData)
 .c2-dot { width: 10px; height: 10px; border-radius: 50%; }
 .c2-dot.c2-up { background: #ff5e5e; box-shadow: 0 0 10px #ff5e5e88; animation: pulse 1.5s infinite; }
 .c2-dot.c2-down { background: #00ff88; }
+.c2-dot.c2-unknown { background: #778ca3; }
 .c2-label { color: #ccc; font-size: 13px; font-weight: 600; }
 .c2-url { color: #555; font-size: 11px; }
 .c2-metrics { text-align: right; }

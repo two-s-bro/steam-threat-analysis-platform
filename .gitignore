@@ -18,15 +18,30 @@ Thumbs.db
 
 # Logs
 *.log
+*.lo
+!backend/src/main/resources/samples/*.log
 
 # --- ⚠️ NEVER COMMIT THESE ⚠️ ---
 # Virus samples (even if disabled)
 # The analysis source folder is for local research only
+raw-evidence/
 private-evidence/
+samples-private/
 *.SAFE_DISABLED
 *.bin
 *.rar
+*.exe
+*.dll
+*.pyd
+*.pyc
+*.zip
+*.7z
+*.tar
+*.gz
 
 # Sensitive
 application-local.yml
+.env
+.env.*
 *.pem
+*.key

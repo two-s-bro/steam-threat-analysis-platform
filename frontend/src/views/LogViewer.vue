@@ -1,10 +1,10 @@
 <template>
   <div class="log-viewer">
     <div class="page-header">
-      <h2 class="page-title">📄 病毒日志查看器</h2>
+      <h2 class="page-title">📄 脱敏事件查看器</h2>
       <div class="header-actions">
-        <el-button size="small" type="success" @click="importRealLogs" :loading="importing">
-          <el-icon><Upload /></el-icon> 导入真实日志文件
+        <el-button size="small" type="success" @click="loadBundledSamples" :loading="importing">
+          <el-icon><Upload /></el-icon> 加载脱敏样例
         </el-button>
       </div>
     </div>
@@ -32,7 +32,7 @@
         </template>
         <div class="log-toolbar">
           <el-input v-model="patchFilter" placeholder="搜索日志..." size="small" style="width:260px;" clearable />
-          <span class="log-meta">文件: SteamPatchToast_patch.lo | 2517行 | 从真实病毒提取</span>
+          <span class="log-meta">来源: 内置脱敏研究样例；不读取本机原始证据</span>
         </div>
         <div class="log-box">
           <div v-for="(line, i) in filteredPatchLines" :key="i" class="log-line" :class="logLineClass(line)">
@@ -48,7 +48,7 @@
           <span>📡 C2 通信日志 <el-tag size="small" effect="dark" type="info">{{ dlCount }}</el-tag></span>
         </template>
         <div class="log-toolbar">
-          <span class="log-meta">文件: _downloadlog/[REDACTED_STEAMID64].txt | 心跳间隔 ~3.5分钟</span>
+          <span class="log-meta">来源: 内置脱敏历史心跳样例</span>
         </div>
         <div class="log-box">
           <div v-for="(line, i) in downloadLines" :key="i" class="log-line c2-log">
@@ -64,7 +64,7 @@
           <span>🚀 启动摘要 <el-tag size="small" effect="dark" type="success">{{ startupCount }}</el-tag></span>
         </template>
         <div class="log-toolbar">
-          <span class="log-meta">文件: SteamPatchToast_startup.lo | 19行</span>
+          <span class="log-meta">来源: 内置脱敏启动样例</span>
         </div>
         <div class="log-box">
           <div v-for="(line, i) in startupLines" :key="i" class="log-line startup-log">
@@ -79,14 +79,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getTimeline, importLogs } from '../api'
+import { getTimeline, importSamples } from '../api'
 import { Upload } from '@element-plus/icons-vue'
 
 const activeTab = ref('patch')
 const importing = ref(false)
 const importResult = ref(null)
 
-// 从后端已导入的时间线中提取日志行
+// 从后端已加载的脱敏时间线中提取样例行
 const patchCount = ref(0)
 const dlCount = ref(0)
 const startupCount = ref(0)
@@ -139,15 +139,15 @@ const loadFromTimeline = async () => {
   startupCount.value = sLines.length
 }
 
-const importRealLogs = async () => {
+const loadBundledSamples = async () => {
   importing.value = true
   try {
-    const res = await importLogs()
-    importResult.value = res.message || '导入完成! ' + JSON.stringify(res.data)
+    const res = await importSamples()
+    importResult.value = res.message || '样例加载完成! ' + JSON.stringify(res.data)
     // 延迟后重新加载
     setTimeout(async () => { await loadFromTimeline() }, 1500)
   } catch (e) {
-    importResult.value = '导入失败: ' + e.message
+    importResult.value = '样例加载失败: ' + e.message
   }
   importing.value = false
 }

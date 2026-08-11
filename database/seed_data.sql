@@ -1,7 +1,7 @@
 -- ============================================
 -- Steam 威胁分析平台 - 种子数据
--- 数据来源: 对真实 Steam 劫持病毒的完整逆向分析
--- 受害者 SteamID64: [REDACTED_STEAMID64]
+-- 数据来源: 私有事件证据的人工筛选与脱敏衍生
+-- 不包含受害者唯一标识、可点击基础设施或原始日志
 -- ============================================
 
 USE steam_threat_db;
@@ -12,15 +12,15 @@ USE steam_threat_db;
 INSERT INTO ioc (ioc_type, ioc_value, risk_level, source_file, description, attack_phase) VALUES
 
 -- 域名
-('domain', 'example[.]invalid', 'HIGH', 'SteamPatchToast_patch.lo', 'C2 钓鱼页面主机，使用 Cloudflare CDN 隐藏真实IP', 2),
+('domain', 'nexustechsolution[.]top', 'HIGH', 'SteamPatchToast_patch.lo', 'C2 钓鱼页面主机，使用 Cloudflare CDN 隐藏真实IP', 2),
 
 -- 文件路径
 ('file_path', '%LocalAppData%\\Programs\\01anu7963sndw1ua\\SteelDungeon.exe', 'HIGH', 'README_研究说明.txt', 'Python 3.14 PyInstaller dropper 主程序', 1),
 ('file_path', '%LocalAppData%\\ServiceApp\\NexusTechNotify.exe', 'HIGH', '.state.json', 'C/C++ MFC 主控程序，负责Steam劫持和守护', 2),
 ('file_path', '%LocalAppData%\\ServiceApp\\locale_patch.dll', 'HIGH', 'README_研究说明.txt', 'CEF 进程注入 DLL，加载钓鱼弹窗', 3),
 ('file_path', '%LocalAppData%\\ServiceApp\\toast_window.html', 'MEDIUM', 'README_研究说明.txt', '高仿真 Steam 客服通知钓鱼弹窗', 3),
-('file_path', '%LocalAppData%\\ServiceApp\\toast-authentic.css', 'LOW', 'README_研究说明.txt', '1:1 还原 Steam Toast CSS (169行)', 3),
-('file_path', '[DRIVE_ROOT]/Windows\\System32\\merged_steam.py', 'HIGH', '注册表 Run 键', '恶意 Python 脚本，伪装为系统文件', 2),
+('file_path', '%LocalAppData%\\ServiceApp\\toast-authentic.css', 'LOW', 'README_研究说明.txt', '仿冒客户端通知视觉样式的本地资源', 3),
+('file_path', '%SystemRoot%\\System32\\merged_steam.py', 'HIGH', '注册表 Run 键', '恶意 Python 脚本，伪装为系统文件', 2),
 ('file_path', 'steamui\\chunk~2dcc5aaf7.js', 'MEDIUM', 'SteamPatchToast_patch.lo', '被注入 110B 恶意代码的 Steam UI 核心 JS', 2),
 ('file_path', 'Steam\\steam.cfg', 'MEDIUM', 'SteamPatchToast_patch.lo', '被篡改的 Steam 配置文件 (禁用自动更新)', 2),
 
@@ -41,8 +41,8 @@ INSERT INTO ioc (ioc_type, ioc_value, risk_level, source_file, description, atta
 ('file_path', '%Temp%\\launcher_7049431c078f4302a634bafe3e5057e5\\gameSatorHost.exe', 'HIGH', '注册表 Run 键', 'WindowsUpdateService 指向的注入器', 3),
 
 -- C2 URL
-('domain', 'example[.]invalid/steamhelper', 'HIGH', 'SteamPatchToast_patch.lo', '钓鱼页面: 含 SteamID64 + 头像哈希参数', 3),
-('domain', 'example[.]invalid/steamhelper.html', 'HIGH', 'SteamPatchToast_patch.lo', '备用钓鱼页: 含账户哈希+SteamID64+头像哈希', 3),
+('domain', 'nexustechsolution[.]top/steamhelper', 'HIGH', 'SteamPatchToast_patch.lo', '钓鱼页面: 含 SteamID64 + 头像哈希参数', 3),
+('domain', 'nexustechsolution[.]top/steamhelper.html', 'HIGH', 'SteamPatchToast_patch.lo', '备用钓鱼页: 含账户哈希+SteamID64+头像哈希', 3),
 
 -- 其他
 ('file_path', '%LocalAppData%\\Temp\\steam', 'LOW', '文件系统扫描', '病毒临时文件目录', 1),
@@ -57,15 +57,15 @@ INSERT INTO timeline (timestamp, phase, action, detail, component_id) VALUES
 
 -- Phase 1: Dropper
 ('2026-06-15 23:25:44', 'DROPPER', 'C2 下载成功，SteelDungeon 落地', '[REDACTED_STEAMID64]----匹配成功----下载成功----执行成功', 1),
-('2026-06-15 23:25:53', 'DROPPER', 'SteelDungeon 启动，枚举 Steam 路径', 'steam path: [DRIVE_ROOT]/steam', 1),
-('2026-06-15 23:25:53', 'DROPPER', '读取 Steam VDF 配置获取受害者信息', 'profile steamid64: [REDACTED_STEAMID64], account: [REDACTED_ACCOUNT], avatar: [REDACTED_AVATAR]', 1),
+('2026-06-15 23:25:53', 'DROPPER', 'SteelDungeon 启动，枚举 Steam 路径', 'steam path: %STEAM_ROOT%', 1),
+('2026-06-15 23:25:53', 'DROPPER', '读取 Steam VDF 配置获取受害者信息', 'profile steamid64: [REDACTED_STEAMID64], account: [REDACTED_ACCOUNT], avatar: [REDACTED_AVATAR_HASH]', 1),
 
 -- Phase 2: 注入
 ('2026-06-15 23:25:53', 'INJECT', '检测需要打补丁', 'patch check: need=1 already=0', 2),
 ('2026-06-15 23:25:53', 'INJECT', '强杀 Steam 进程', 'proc sync: force kill (no shutdown dialog)', 2),
 ('2026-06-15 23:25:54', 'INJECT', 'Steam 进程已终止', 'proc sync: done', 2),
-('2026-06-15 23:25:54', 'PHISH', '构建钓鱼 URL (含受害者 SteamID)', 'patch url help: https://example[.]invalid/steamhelper?d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR]', 2),
-('2026-06-15 23:25:54', 'PHISH', '构建备用钓鱼 URL (含账户哈希)', 'patch url support: https://example[.]invalid/steamhelper.html?u=[REDACTED_ACCOUNT]&d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR]', 2),
+('2026-06-15 23:25:54', 'PHISH', '构建钓鱼 URL (含受害者 SteamID)', 'patch url help: hxxps://nexustechsolution[.]top/steamhelper?d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR_HASH]', 2),
+('2026-06-15 23:25:54', 'PHISH', '构建备用钓鱼 URL (含账户哈希)', 'patch url support: hxxps://nexustechsolution[.]top/steamhelper.html?u=[REDACTED_ACCOUNT]&d=[REDACTED_STEAMID64]&a=[REDACTED_AVATAR_HASH]', 2),
 ('2026-06-15 23:25:55', 'INJECT', 'chunk JS 注入完成', 'patch: ok done total=1 attempt=0', 2),
 ('2026-06-15 23:25:55', 'INJECT', '写入 steam.cfg 禁用自动更新', 'steam.cfg: write ok (BootStrapperInhibitAll=enable, BootStrapperForceSelfUpdate=disable)', 2),
 ('2026-06-15 23:25:55', 'INJECT', '静默重启 Steam', 'proc sync: steam.exe -silent (detached)', 2),
@@ -100,7 +100,7 @@ INSERT INTO component_info (id, name, role, tech_stack, file_size, parent_id, at
 (2, 'python314.dll', 'payload', 'CPython 3.14 原生DLL', 6753112, 1, 1,
  'Python 3.14 运行时，使打包后的 Python 代码能在目标机器上执行。'),
 (3, 'payload.bin', 'payload', '二进制加密数据', 38096, 1, 1,
- '加密的 Dropper 载荷配置，需逆向 SteelDungeon 获取解密密钥。'),
+ '加密的 Dropper 载荷配置；内容未在公开研究环境中恢复或验证。'),
 (4, 'ungeond.rar', 'payload', '加密 RAR 压缩包', 15883534, 1, 1,
  '15.8MB 加密压缩包，疑似包含 ServiceApp 完整组件。'),
 (5, 'library.zip', 'payload', 'Python 标准库', NULL, 1, 1,
@@ -113,7 +113,7 @@ INSERT INTO component_info (id, name, role, tech_stack, file_size, parent_id, at
  '感染状态标记: {downloaded:true, exe_list:[...]}'),
 
 -- Phase 2: C2
-(8, 'example[.]invalid', 'c2', 'HTTPS + Cloudflare', NULL, 6, 2,
+(8, 'nexustechsolution[.]top', 'c2', 'HTTPS + Cloudflare', NULL, 6, 2,
  'C2 服务器域名。端点: /steamhelper, /steamhelper.html'),
 
 -- Phase 3: 注入器
@@ -124,12 +124,12 @@ INSERT INTO component_info (id, name, role, tech_stack, file_size, parent_id, at
 (10, 'toast_window.html', 'payload', 'HTML5 + vanilla JS', 6280, 9, 3,
  '高仿真 Steam 客服通知弹窗。SSOT: 实时时间戳 + 固定案件编号。'),
 (11, 'toast-authentic.css', 'payload', 'CSS3 (169 lines)', 115636, 10, 3,
- '从 Steam 原版 chunk~2dcc5aaf7.css 提取，1:1 还原 Toast 样式。'),
+ '与客户端通知视觉仿冒相关的样式资源；公开仓库不分发其内容。'),
 (12, 'desktop_toast_default.wav', 'payload', 'WAV 音效', 111952, 10, 3,
  'Steam 原生通知音效，增强弹窗仿真度。'),
 
 -- Stealth
 (13, 'chunk~2dcc5aaf7.js (篡改后)', 'payload', 'JavaScript (~14MB, +110B注入)', NULL, 6, 2,
- 'Steam UI Webpack chunk。在 ResolveURL() 中注入 110B，劫持 HelpAppPage/HelpFrontPage/SupportMessages。'),
+ 'Steam UI Webpack chunk。帮助与支持路由区域出现异常目的地修改。'),
 (14, 'steam.cfg (篡改后)', 'payload', 'INI 配置', 68, 6, 2,
  '禁用 Steam 自动更新: BootStrapperInhibitAll=enable, BootStrapperForceSelfUpdate=disable');

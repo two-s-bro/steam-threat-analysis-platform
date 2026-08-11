@@ -1,6 +1,7 @@
 package com.steamthreat.logparser;
 
 import com.steamthreat.entity.Timeline;
+import com.steamthreat.security.ThreatIntelSanitizer;
 import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -9,8 +10,7 @@ import java.util.*;
 import java.util.regex.*;
 
 /**
- * 病毒日志解析器
- * 解析 SteamPatchToast_patch.lo 和 _downloadlog/*.txt
+ * 离线日志解析器。调用者仍须确保输入文件来自受控研究环境。
  */
 public class LogParser {
 
@@ -19,7 +19,7 @@ public class LogParser {
 
     /**
      * 解析补丁日志
-     * 格式: 2026-06-15 23:25:53 steam path: [DRIVE_ROOT]/steam
+     * 格式: 2026-06-15 23:25:53 steam path: %STEAM_ROOT%
      */
     public static List<Timeline> parsePatchLog(String filePath) throws IOException {
         List<Timeline> events = new ArrayList<>();
@@ -31,7 +31,8 @@ public class LogParser {
             try {
                 String timeStr = line.substring(0, 19);
                 LocalDateTime time = LocalDateTime.parse(timeStr, DT_FORMAT);
-                String content = line.substring(20).trim();
+                String sanitizedLine = ThreatIntelSanitizer.sanitize(line);
+                String content = sanitizedLine.substring(20).trim();
 
                 String phase = detectPhase(content);
                 String action = content.length() > 200 ? content.substring(0, 200) : content;
@@ -40,7 +41,7 @@ public class LogParser {
                         .timestamp(time)
                         .phase(phase)
                         .action(action)
-                        .detail(line)
+                        .detail(sanitizedLine)
                         .build());
             } catch (Exception ignored) {}
         }
@@ -49,7 +50,7 @@ public class LogParser {
 
     /**
      * 解析 C2 下载日志
-     * 格式: 2026-06-15 23:25:44 [REDACTED_STEAMID64]----匹配成功----下载成功----执行成功
+     * 格式: 时间戳、已脱敏主体标识及状态字段，以四个连字符分隔。
      */
     public static List<Timeline> parseDownloadLog(String filePath) throws IOException {
         List<Timeline> events = new ArrayList<>();
@@ -59,17 +60,18 @@ public class LogParser {
             if (!line.startsWith("202")) continue;
 
             try {
-                String timeStr = line.substring(0, 19);
+                String sanitizedLine = ThreatIntelSanitizer.sanitize(line);
+                String timeStr = sanitizedLine.substring(0, 19);
                 LocalDateTime time = LocalDateTime.parse(timeStr, DT_FORMAT);
 
-                String[] parts = line.substring(20).split("----");
+                String[] parts = sanitizedLine.substring(20).split("----");
                 String steamId = parts.length > 0 ? parts[0].trim() : "";
 
                 events.add(Timeline.builder()
                         .timestamp(time)
                         .phase("HEARTBEAT")
                         .action("C2心跳: " + steamId)
-                        .detail(line)
+                        .detail(sanitizedLine)
                         .build());
             } catch (Exception ignored) {}
         }
